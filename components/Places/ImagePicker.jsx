@@ -7,9 +7,10 @@ import {
   launchImageLibraryAsync,
 } from "expo-image-picker";
 import { Colors } from "../../constants/colors";
+import CustomButton from "../UI/CustomButtom";
 
-function ImagePicker() {
-  const [selectedImage, setSelectedImage] = useState({});
+function ImagePicker({ onTakeImage }) {
+  const [selectedImage, setSelectedImage] = useState();
   const [cameraPermissionInformation, requestPermission] =
     useCameraPermissions();
 
@@ -42,6 +43,7 @@ function ImagePicker() {
     });
     console.log(image);
     setSelectedImage(image.assets[0].uri);
+    onTakeImage(image.assets[0].uri);
   }
   async function uploadImageHandler() {
     const image = await launchImageLibraryAsync({
@@ -51,8 +53,9 @@ function ImagePicker() {
     });
     console.log(image);
     setSelectedImage(image.assets[0].uri);
+    onTakeImage(image.assets[0].uri);
   }
-  let imagePreview = <Text>No image selected.</Text>;
+  let imagePreview = <Text>No image selected</Text>;
   if (selectedImage) {
     imagePreview = (
       <Image style={styles.image} source={{ uri: selectedImage }} />
@@ -62,8 +65,12 @@ function ImagePicker() {
     <View>
       <View style={styles.imagePreview}>{imagePreview}</View>
       <View style={styles.buttonRow}>
-        <Button title="Take Image" onPress={takeImageHandler} />
-        <Button title="Upload Image" onPress={uploadImageHandler} />
+        <CustomButton onPress={takeImageHandler} icon="camera">
+          Take Image
+        </CustomButton>
+        <CustomButton onPress={uploadImageHandler} icon="share">
+          Upload Image
+        </CustomButton>
       </View>
     </View>
   );
@@ -80,6 +87,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: Colors.primary100,
     borderRadius: 4,
+    color: "#fff",
   },
   image: {
     width: "100%",
