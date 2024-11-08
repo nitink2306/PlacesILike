@@ -1,12 +1,15 @@
 import { ScrollView, Image, View, StyleSheet, Text, Alert } from "react-native";
-
+import { useEffect, useState } from "react";
+import { useIsFocused } from "@react-navigation/native";
 import CustomButton from "../components/UI/CustomButtom";
 import { Colors } from "../constants/colors";
-import { useEffect, useState } from "react";
 import { fetchPlaceWithId, deletePlace } from "../util/database";
 
 export default function PlaceDetails({ route, navigation }) {
   const [fetchedPlace, setFetchedPlace] = useState();
+  const selectedPlaceId = route.params.placeId;
+  const isFocused = useIsFocused();
+
   function showOnMapHandler() {
     navigation.navigate("Map", {
       initialLat: fetchedPlace.lat,
@@ -22,25 +25,30 @@ export default function PlaceDetails({ route, navigation }) {
         style: "destructive",
         onPress: async () => {
           await deletePlace(selectedPlaceId);
-          navigation.navigate("AllPlaces"); // Navigate back to AllPlaces after deletion
+          navigation.navigate("AllPlaces");
         },
       },
     ]);
   }
 
-  const selectedPlaceId = route.params.placeId;
-  useEffect(() => {
-    // selectedPlaceId to fetch data
-    async function loadPlaceData() {
-      const place = await fetchPlaceWithId(selectedPlaceId);
-      setFetchedPlace(place);
-      navigation.setOptions({
-        title: place.title,
-      });
-    }
+  function editPlaceHandler() {
+    navigation.navigate("EditPlace", {
+      placeId: selectedPlaceId,
+    });
+  }
 
-    loadPlaceData();
-  }, [selectedPlaceId]);
+  useEffect(() => {
+    if (isFocused) {
+      async function loadPlaceData() {
+        const place = await fetchPlaceWithId(selectedPlaceId);
+        setFetchedPlace(place);
+        navigation.setOptions({
+          title: place.title,
+        });
+      }
+      loadPlaceData();
+    }
+  }, [isFocused, selectedPlaceId]);
 
   if (!fetchedPlace) {
     return (
@@ -49,6 +57,7 @@ export default function PlaceDetails({ route, navigation }) {
       </View>
     );
   }
+
   return (
     <ScrollView>
       <Image source={{ uri: fetchedPlace.imageUri }} style={styles.image} />
@@ -58,6 +67,9 @@ export default function PlaceDetails({ route, navigation }) {
         </View>
         <CustomButton icon="map" onPress={showOnMapHandler}>
           View on Map
+        </CustomButton>
+        <CustomButton icon="pencil" onPress={editPlaceHandler}>
+          Edit Place
         </CustomButton>
         <CustomButton icon="trash" onPress={deletePlaceHandler}>
           Delete Place

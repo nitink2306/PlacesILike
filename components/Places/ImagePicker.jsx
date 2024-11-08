@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button, View, Alert, StyleSheet, Text, Image } from "react-native";
 import {
   launchCameraAsync,
@@ -9,10 +9,16 @@ import {
 import { Colors } from "../../constants/colors";
 import CustomButton from "../UI/CustomButtom";
 
-function ImagePicker({ onTakeImage }) {
-  const [selectedImage, setSelectedImage] = useState();
+function ImagePicker({ onTakeImage, initialImage }) {
+  const [selectedImage, setSelectedImage] = useState(initialImage);
   const [cameraPermissionInformation, requestPermission] =
     useCameraPermissions();
+
+  useEffect(() => {
+    if (initialImage) {
+      setSelectedImage(initialImage);
+    }
+  }, [initialImage]);
 
   async function verifyPermission() {
     if (cameraPermissionInformation.status === PermissionStatus.UNDETERMINED) {

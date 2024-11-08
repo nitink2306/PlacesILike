@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Colors } from "../../constants/colors";
@@ -7,10 +7,18 @@ import SubmitButton from "../UI/SubmitButton";
 import ImagePicker from "./ImagePicker";
 import LocationPicker from "./LocationPicker";
 
-function PlaceForm({ onCreatePlace }) {
+function PlaceForm({ onCreatePlace, onEditPlace, initialValues }) {
   const [enteredTitle, setEnteredTitle] = useState("");
-  const [selectedImage, setSelectedImage] = useState();
+  const [selectedImage, setSelectedImage] = useState(
+    initialValues?.imageUri || ""
+  );
   const [pickedLocation, setPickedLocation] = useState();
+
+  useEffect(() => {
+    if (initialValues) {
+      setEnteredTitle(initialValues.title || "");
+    }
+  }, [initialValues]);
 
   function changeTitleHandler(enteredText) {
     setEnteredTitle(enteredText);
@@ -25,8 +33,18 @@ function PlaceForm({ onCreatePlace }) {
   }, []);
 
   function savePlaceHandler() {
-    const placeData = new Place(enteredTitle, selectedImage, pickedLocation);
-    onCreatePlace(placeData);
+    const placeData = new Place(
+      enteredTitle,
+      selectedImage,
+      pickedLocation || initialValues.location
+    );
+
+    if (initialValues && initialValues.id) {
+      placeData.id = initialValues.id;
+      onEditPlace(placeData);
+    } else {
+      onCreatePlace(placeData);
+    }
   }
 
   return (
@@ -39,9 +57,17 @@ function PlaceForm({ onCreatePlace }) {
           value={enteredTitle}
         />
       </View>
-      <ImagePicker onTakeImage={takeImageHandler} />
-      <LocationPicker onPickLocation={pickLocationHandler} />
-      <SubmitButton onPress={savePlaceHandler}>Add Place</SubmitButton>
+      <ImagePicker
+        onTakeImage={takeImageHandler}
+        initialImage={initialValues?.imageUri}
+      />
+      <LocationPicker
+        onPickLocation={pickLocationHandler}
+        initialLocation={initialValues?.location} // Pass initial location directly
+      />
+      <SubmitButton onPress={savePlaceHandler}>
+        {initialValues ? "Save Changes" : "Add Place"}
+      </SubmitButton>
     </ScrollView>
   );
 }

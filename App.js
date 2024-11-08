@@ -8,19 +8,26 @@ import IconButton from "./components/UI/IconButton";
 import { Colors } from "./constants/colors";
 import Map from "./screens/Map";
 import * as SplashScreen from "expo-splash-screen";
+import * as LocalAuthentication from "expo-local-authentication";
 import { useState, useEffect, useCallback } from "react";
 import { initPlacesDB } from "./util/database";
 import PlaceDetailed from "./screens/PlaceDetailed";
+import EditPlace from "./screens/EditPlace";
+import AllLocationsMap from "./screens/AllLocationsMap";
 
 const Stack = createNativeStackNavigator();
+
 export default function App() {
   const [dbInitialized, setDbInitialized] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const prepare = async () => {
       try {
         await SplashScreen.preventAutoHideAsync();
-        initPlacesDB();
+        await initPlacesDB();
+        const authResult = await authenticate();
+        setIsAuthenticated(authResult);
       } catch (e) {
         console.warn(e);
       } finally {
@@ -30,13 +37,33 @@ export default function App() {
     prepare();
   }, []);
 
+  async function authenticate() {
+    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+    if (!hasHardware) {
+      console.warn("Biometric authentication is not available on this device.");
+      return false;
+    }
+
+    const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+    if (!isEnrolled) {
+      console.warn("No biometrics found. Please set up biometrics.");
+      return false;
+    }
+
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: "Authenticate with Biometrics",
+    });
+
+    return result.success;
+  }
+
   const onLayoutRootView = useCallback(async () => {
     if (dbInitialized) {
       await SplashScreen.hideAsync();
     }
   }, [dbInitialized]);
 
-  if (!dbInitialized) return null;
+  if (!dbInitialized || !isAuthenticated) return null;
 
   return (
     <>
@@ -57,12 +84,20 @@ export default function App() {
             options={({ navigation }) => ({
               title: "Places I Like",
               headerRight: (tintColor) => (
-                <IconButton
-                  icon="add"
-                  size={28}
-                  color={tintColor}
-                  onPress={() => navigation.navigate("PlaceAdd")}
-                />
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <IconButton
+                    icon="map"
+                    size={28}
+                    color={tintColor}
+                    onPress={() => navigation.navigate("AllLocationsMap")}
+                  />
+                  <IconButton
+                    icon="add"
+                    size={28}
+                    color={tintColor}
+                    onPress={() => navigation.navigate("PlaceAdd")}
+                  />
+                </View>
               ),
             })}
           />
@@ -80,6 +115,12 @@ export default function App() {
             options={{
               title: "Loading Place...",
             }}
+          />
+          <Stack.Screen name="EditPlace" component={EditPlace} />
+          <Stack.Screen
+            name="AllLocationsMap"
+            component={AllLocationsMap}
+            options={{ title: "All Locations" }}
           />
         </Stack.Navigator>
       </NavigationContainer>

@@ -15,8 +15,9 @@ import { Colors } from "../../constants/colors";
 import OutlinedButton from "../UI/CustomButtom";
 import { getAddress, getMapPreview } from "../../util/location";
 
-function LocationPicker({ onPickLocation }) {
-  const [pickedLocation, setPickedLocation] = useState();
+function LocationPicker({ onPickLocation, initialLocation }) {
+  // Set `initialLocation` as the starting value for `pickedLocation`
+  const [pickedLocation, setPickedLocation] = useState(initialLocation || null);
   const isFocused = useIsFocused();
 
   const navigation = useNavigation();
@@ -37,12 +38,17 @@ function LocationPicker({ onPickLocation }) {
 
   useEffect(() => {
     async function handleLocation() {
-      if (pickedLocation) {
-        const address = await getAddress(
-          pickedLocation.lat,
-          pickedLocation.lng
-        );
-        onPickLocation({ ...pickedLocation, address: address });
+      if (pickedLocation && pickedLocation.lat && pickedLocation.lng) {
+        try {
+          const address = await getAddress(
+            pickedLocation.lat,
+            pickedLocation.lng
+          );
+          onPickLocation({ ...pickedLocation, address });
+        } catch (error) {
+          console.error("Error fetching address:", error.message);
+          Alert.alert("Error", "Failed to fetch address.");
+        }
       }
     }
 
@@ -54,7 +60,6 @@ function LocationPicker({ onPickLocation }) {
       locationPermissionInformation.status === PermissionStatus.UNDETERMINED
     ) {
       const permissionResponse = await requestPermission();
-
       return permissionResponse.granted;
     }
 
@@ -87,8 +92,8 @@ function LocationPicker({ onPickLocation }) {
     navigation.navigate("Map");
   }
 
+  // Show map preview if there is a valid picked location
   let locationPreview = <Text>No location picked yet.</Text>;
-
   if (pickedLocation) {
     locationPreview = (
       <Image
@@ -136,6 +141,5 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
-    // borderRadius: 4
   },
 });
