@@ -116,7 +116,11 @@ export default function App() {
               title: "Loading Place...",
             }}
           />
-          <Stack.Screen name="EditPlace" component={EditPlace} />
+          <Stack.Screen
+            name="EditPlace"
+            component={EditPlace}
+            options={{ title: "Edit A Place" }}
+          />
           <Stack.Screen
             name="AllLocationsMap"
             component={AllLocationsMap}

@@ -5,12 +5,19 @@ import MapView, { Marker } from "react-native-maps";
 import IconButton from "../components/UI/IconButton";
 
 function Map({ navigation, route }) {
-  const initialLocation = route.params && {
-    lat: route.params.initialLat,
-    lng: route.params.initialLng,
-  };
+  const initialLocation =
+    route.params?.initialLat && route.params?.initialLng
+      ? {
+          lat: route.params.initialLat,
+          lng: route.params.initialLng,
+        }
+      : null;
 
   const [selectedLocation, setSelectedLocation] = useState(initialLocation);
+
+  const origin = route.params?.origin;
+
+  const placeId = route.params?.placeId;
 
   const region = {
     latitude: initialLocation ? initialLocation.lat : 39.1716,
@@ -38,11 +45,12 @@ function Map({ navigation, route }) {
       return;
     }
 
-    navigation.navigate("PlaceAdd", {
+    navigation.navigate(origin, {
       pickedLat: selectedLocation.lat,
       pickedLng: selectedLocation.lng,
+      placeId: placeId,
     });
-  }, [navigation, selectedLocation]);
+  }, [navigation, selectedLocation, origin]);
 
   useLayoutEffect(() => {
     if (initialLocation) {

@@ -6,31 +6,42 @@ import { Colors } from "../constants/colors";
 
 export default function EditPlace({ route, navigation }) {
   const [placeData, setPlaceData] = useState({});
+  const [loading, setLoading] = useState(true);
   const placeId = route.params.placeId;
 
   useEffect(() => {
     async function loadPlaceData() {
+      setLoading(true);
       const data = await fetchPlaceWithId(placeId);
 
       const formattedData = {
         title: data.title,
         imageUri: data.imageUri,
         location: {
-          latitude: data.lat,
-          longitude: data.lng,
-          address: data.address,
+          lat: data.lat,
+          lng: data.lng,
         },
         id: data.id,
       };
 
       setPlaceData(formattedData);
+      setLoading(false);
     }
     loadPlaceData();
   }, [placeId]);
 
   async function handleFormSubmit(updatedPlace) {
-    await updatePlace(updatedPlace);
-    navigation.navigate("PlaceDetails", { placeId }); // Return to PlaceDetails
+    console.log(updatedPlace);
+    const formattedData = {
+      title: updatedPlace.title,
+      imageUri: updatedPlace.imageUri,
+      address: updatedPlace.address,
+      lat: updatedPlace.location.latitude,
+      lng: updatedPlace.location.longitude,
+      id: updatedPlace.id,
+    };
+    await updatePlace(formattedData);
+    navigation.navigate("PlaceDetailed", { placeId });
   }
 
   if (!placeData) {
@@ -41,7 +52,22 @@ export default function EditPlace({ route, navigation }) {
     );
   }
 
-  return <PlaceForm initialValues={placeData} onEditPlace={handleFormSubmit} />;
+  if (loading) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color={Colors.primary500} />
+      </View>
+    );
+  }
+
+  return (
+    <PlaceForm
+      initialValues={placeData}
+      onEditPlace={handleFormSubmit}
+      origin="EditPlace"
+      placeId={placeId}
+    />
+  );
 }
 
 const styles = StyleSheet.create({

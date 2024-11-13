@@ -15,19 +15,29 @@ import { Colors } from "../../constants/colors";
 import OutlinedButton from "../UI/CustomButtom";
 import { getAddress, getMapPreview } from "../../util/location";
 
-function LocationPicker({ onPickLocation, initialLocation }) {
-  // Set `initialLocation` as the starting value for `pickedLocation`
+function LocationPicker({ onPickLocation, initialLocation, origin, placeId }) {
   const [pickedLocation, setPickedLocation] = useState(initialLocation || null);
   const isFocused = useIsFocused();
-
   const navigation = useNavigation();
   const route = useRoute();
-
   const [locationPermissionInformation, requestPermission] =
     useForegroundPermissions();
 
+  // Set initial location only once if it's defined
   useEffect(() => {
-    if (isFocused && route.params) {
+    if (initialLocation && !pickedLocation) {
+      setPickedLocation(initialLocation);
+    }
+  }, [initialLocation]);
+
+  // Update picked location if returning from the Map screen with selected coordinates
+  useEffect(() => {
+    if (
+      isFocused &&
+      route.params &&
+      route.params.pickedLat &&
+      route.params.pickedLng
+    ) {
       const mapPickedLocation = {
         lat: route.params.pickedLat,
         lng: route.params.pickedLng,
@@ -36,6 +46,7 @@ function LocationPicker({ onPickLocation, initialLocation }) {
     }
   }, [route, isFocused]);
 
+  // Fetch address only when pickedLocation changes
   useEffect(() => {
     async function handleLocation() {
       if (pickedLocation && pickedLocation.lat && pickedLocation.lng) {
@@ -89,7 +100,10 @@ function LocationPicker({ onPickLocation, initialLocation }) {
   }
 
   function pickOnMapHandler() {
-    navigation.navigate("Map");
+    navigation.navigate("Map", {
+      origin: origin || "PlaceAdd",
+      placeId: placeId,
+    });
   }
 
   // Show map preview if there is a valid picked location

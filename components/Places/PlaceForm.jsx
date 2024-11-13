@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  ActivityIndicator,
+} from "react-native";
 
 import { Colors } from "../../constants/colors";
 import { Place } from "../../models/place";
@@ -7,16 +14,31 @@ import SubmitButton from "../UI/SubmitButton";
 import ImagePicker from "./ImagePicker";
 import LocationPicker from "./LocationPicker";
 
-function PlaceForm({ onCreatePlace, onEditPlace, initialValues }) {
+function PlaceForm({
+  onCreatePlace,
+  onEditPlace,
+  initialValues,
+  origin,
+  placeId,
+}) {
   const [enteredTitle, setEnteredTitle] = useState("");
-  const [selectedImage, setSelectedImage] = useState(
-    initialValues?.imageUri || ""
-  );
+  const [selectedImage, setSelectedImage] = useState("");
   const [pickedLocation, setPickedLocation] = useState();
 
   useEffect(() => {
     if (initialValues) {
+      console.log(initialValues.location);
       setEnteredTitle(initialValues.title || "");
+      setSelectedImage(initialValues.imageUri || "");
+      setPickedLocation(
+        initialValues.location
+          ? {
+              lat: initialValues.location.lat,
+              lng: initialValues.location.lng,
+            }
+          : null
+      );
+      console.log(pickedLocation);
     }
   }, [initialValues]);
 
@@ -47,6 +69,14 @@ function PlaceForm({ onCreatePlace, onEditPlace, initialValues }) {
     }
   }
 
+  // if (loading) {
+  //   return (
+  //     <View style={styles.loadingContainer}>
+  //       <ActivityIndicator size="large" color={Colors.primary500} />
+  //     </View>
+  //   );
+  // }
+
   return (
     <ScrollView style={styles.form}>
       <View>
@@ -59,11 +89,17 @@ function PlaceForm({ onCreatePlace, onEditPlace, initialValues }) {
       </View>
       <ImagePicker
         onTakeImage={takeImageHandler}
-        initialImage={initialValues?.imageUri}
+        initialImage={selectedImage} // Pass selectedImage after loading
       />
       <LocationPicker
         onPickLocation={pickLocationHandler}
-        initialLocation={initialValues?.location} // Pass initial location directly
+        initialLocation={
+          pickedLocation
+            ? { lat: pickedLocation.lat, lng: pickedLocation.lng }
+            : undefined
+        }
+        origin={origin}
+        placeId={placeId}
       />
       <SubmitButton onPress={savePlaceHandler}>
         {initialValues ? "Save Changes" : "Add Place"}
@@ -93,5 +129,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     backgroundColor: Colors.primary100,
     color: "#FFFFFF",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
