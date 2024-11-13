@@ -1,4 +1,14 @@
-import { ScrollView, Image, View, StyleSheet, Text, Alert } from "react-native";
+import {
+  ScrollView,
+  Image,
+  View,
+  StyleSheet,
+  Text,
+  Alert,
+  ActionSheetIOS,
+  Platform,
+  Share,
+} from "react-native";
 import { useEffect, useState } from "react";
 import { useIsFocused } from "@react-navigation/native";
 import CustomButton from "../components/UI/CustomButtom";
@@ -37,6 +47,68 @@ export default function PlaceDetails({ route, navigation }) {
     });
   }
 
+  async function sharePlaceHandler() {
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ["Cancel", "Share Image", "Share Location"],
+          cancelButtonIndex: 0,
+        },
+        async (buttonIndex) => {
+          if (buttonIndex === 1) {
+            // Share Image
+            try {
+              await Share.share({
+                url: fetchedPlace.imageUri, // Use URL field for sharing an image
+                message: `Check out this place: ${fetchedPlace.title}`, // Optional message
+              });
+            } catch (error) {
+              alert(error.message);
+            }
+          } else if (buttonIndex === 2) {
+            // Share Location
+            try {
+              await Share.share({
+                message: `Check out this place: ${fetchedPlace.title}\n\nLocation: https://www.google.com/maps/search/?api=1&query=${fetchedPlace.lat},${fetchedPlace.lng}`,
+              });
+            } catch (error) {
+              alert(error.message);
+            }
+          }
+        }
+      );
+    } else {
+      Alert.alert("Share Options", "Choose what you'd like to share", [
+        {
+          text: "Share Image",
+          onPress: async () => {
+            try {
+              await Share.share({
+                url: fetchedPlace.imageUri, // Share the image URI on Android
+                message: `Check out this place: ${fetchedPlace.title}`, // Optional message
+              });
+            } catch (error) {
+              alert(error.message);
+            }
+          },
+        },
+        {
+          text: "Share Location",
+          onPress: async () => {
+            try {
+              await Share.share({
+                message: `Check out this place: ${fetchedPlace.title}\n\nLocation: https://www.google.com/maps/search/?api=1&query=${fetchedPlace.lat},${fetchedPlace.lng}`,
+              });
+            } catch (error) {
+              alert(error.message);
+            }
+          },
+        },
+        { text: "Cancel", style: "cancel" },
+      ]);
+    }
+  }
+
   useEffect(() => {
     if (isFocused) {
       async function loadPlaceData() {
@@ -73,6 +145,9 @@ export default function PlaceDetails({ route, navigation }) {
         </CustomButton>
         <CustomButton icon="trash" onPress={deletePlaceHandler}>
           Delete Place
+        </CustomButton>
+        <CustomButton icon="share" onPress={sharePlaceHandler}>
+          Share Place
         </CustomButton>
       </View>
     </ScrollView>
