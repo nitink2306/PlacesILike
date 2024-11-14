@@ -14,6 +14,7 @@ import { initPlacesDB } from "./util/database";
 import PlaceDetailed from "./screens/PlaceDetailed";
 import EditPlace from "./screens/EditPlace";
 import AllLocationsMap from "./screens/AllLocationsMap";
+import FavoritePlaces from "./screens/FavoritePlaces";
 
 const Stack = createNativeStackNavigator();
 
@@ -52,6 +53,9 @@ export default function App() {
 
     const result = await LocalAuthentication.authenticateAsync({
       promptMessage: "Authenticate with Biometrics",
+      cancelLabel: "Cancel",
+      fallbackLabel: "Enter PIN",
+      disableDeviceFallback: false, // Allows fallback to PIN if Face ID or Touch ID fails
     });
 
     return result.success;
@@ -82,20 +86,32 @@ export default function App() {
             name="AllPlaces"
             component={AllPlaces}
             options={({ navigation }) => ({
-              title: "Places I Like",
+              title: "Home",
               headerRight: (tintColor) => (
-                <View style={{ flexDirection: "row", gap: 10 }}>
-                  <IconButton
-                    icon="map"
-                    size={28}
-                    color={tintColor}
-                    onPress={() => navigation.navigate("AllLocationsMap")}
-                  />
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View style={{ marginRight: 15 }}>
+                    <IconButton
+                      icon="map"
+                      size={28}
+                      color={tintColor}
+                      onPress={() => navigation.navigate("AllLocationsMap")}
+                    />
+                  </View>
                   <IconButton
                     icon="add"
                     size={28}
                     color={tintColor}
                     onPress={() => navigation.navigate("PlaceAdd")}
+                  />
+                </View>
+              ),
+              headerLeft: (tintColor) => (
+                <View style={{ paddingLeft: 10 }}>
+                  <IconButton
+                    icon="heart"
+                    size={28}
+                    color={tintColor}
+                    onPress={() => navigation.navigate("FavoritePlaces")}
                   />
                 </View>
               ),
@@ -125,6 +141,11 @@ export default function App() {
             name="AllLocationsMap"
             component={AllLocationsMap}
             options={{ title: "All Locations" }}
+          />
+          <Stack.Screen
+            name="FavoritePlaces"
+            component={FavoritePlaces}
+            options={{ title: "Favorite Places" }}
           />
         </Stack.Navigator>
       </NavigationContainer>
