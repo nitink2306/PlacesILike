@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { Colors } from "../../constants/colors";
 import { useNavigation } from "@react-navigation/native";
 
-function PlacesList({ places }) {
+function PlacesList({ places, isFiltered }) {
   const navigation = useNavigation(); // Hook to enable navigation between screens
 
   // Navigate to the "PlaceDetailed" screen with the selected place ID
@@ -14,11 +14,13 @@ function PlacesList({ places }) {
     });
   }
 
-  // Fallback UI displayed when there are no places to show
+  // Determine fallback UI based on the state of the list
   if (!places || places.length === 0) {
     return (
       <View style={styles.fallbackContainer}>
-        <Text style={styles.fallBackText}>No places added</Text>
+        <Text style={styles.fallBackText}>
+          {isFiltered ? "No matching places found" : "No places added"}
+        </Text>
       </View>
     );
   }

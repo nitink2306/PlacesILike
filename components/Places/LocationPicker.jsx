@@ -12,7 +12,7 @@ import {
 } from "@react-navigation/native";
 
 import { Colors } from "../../constants/colors";
-import OutlinedButton from "../UI/CustomButtom";
+import CustomButton from "../UI/CustomButtom";
 import { getAddress, getMapPreview } from "../../util/location";
 
 function LocationPicker({ onPickLocation, initialLocation, origin, placeId }) {
@@ -23,33 +23,27 @@ function LocationPicker({ onPickLocation, initialLocation, origin, placeId }) {
   const [locationPermissionInformation, requestPermission] =
     useForegroundPermissions();
 
-  // Set initial location only once if it's defined
+  // Set the initial location once
   useEffect(() => {
     if (initialLocation && !pickedLocation) {
       setPickedLocation(initialLocation);
     }
-  }, [initialLocation]);
+  }, [initialLocation, pickedLocation]);
 
-  // Update picked location if returning from the Map screen with selected coordinates
+  // Update pickedLocation if returning from Map with coordinates
   useEffect(() => {
-    if (
-      isFocused &&
-      route.params &&
-      route.params.pickedLat &&
-      route.params.pickedLng
-    ) {
-      const mapPickedLocation = {
+    if (isFocused && route.params?.pickedLat && route.params?.pickedLng) {
+      setPickedLocation({
         lat: route.params.pickedLat,
         lng: route.params.pickedLng,
-      };
-      setPickedLocation(mapPickedLocation);
+      });
     }
-  }, [route, isFocused]);
+  }, [route.params, isFocused]);
 
-  // Fetch address only when pickedLocation changes
+  // Fetch the address when pickedLocation changes
   useEffect(() => {
-    async function handleLocation() {
-      if (pickedLocation && pickedLocation.lat && pickedLocation.lng) {
+    async function fetchAddress() {
+      if (pickedLocation?.lat && pickedLocation?.lng) {
         try {
           const address = await getAddress(
             pickedLocation.lat,
@@ -62,18 +56,17 @@ function LocationPicker({ onPickLocation, initialLocation, origin, placeId }) {
         }
       }
     }
-
-    handleLocation();
+    fetchAddress();
   }, [pickedLocation, onPickLocation]);
 
-  async function verifyPermissions() {
+  // Verify and request location permissions
+  const verifyPermissions = async () => {
     if (
       locationPermissionInformation.status === PermissionStatus.UNDETERMINED
     ) {
       const permissionResponse = await requestPermission();
       return permissionResponse.granted;
     }
-
     if (locationPermissionInformation.status === PermissionStatus.DENIED) {
       Alert.alert(
         "Insufficient Permissions!",
@@ -81,54 +74,52 @@ function LocationPicker({ onPickLocation, initialLocation, origin, placeId }) {
       );
       return false;
     }
-
     return true;
-  }
+  };
 
-  async function getLocationHandler() {
+  // Get the user's current location
+  const getLocationHandler = async () => {
     const hasPermission = await verifyPermissions();
-
-    if (!hasPermission) {
-      return;
-    }
+    if (!hasPermission) return;
 
     const location = await getCurrentPositionAsync();
     setPickedLocation({
       lat: location.coords.latitude,
       lng: location.coords.longitude,
     });
-  }
+  };
 
-  function pickOnMapHandler() {
+  // Navigate to the Map screen
+  const pickOnMapHandler = () => {
     navigation.navigate("Map", {
       origin: origin || "PlaceAdd",
-      placeId: placeId,
+      placeId,
     });
-  }
+  };
 
-  // Show map preview if there is a valid picked location
-  let locationPreview = <Text>No location picked yet.</Text>;
-  if (pickedLocation) {
-    locationPreview = (
+  // Render map preview or placeholder
+  const renderLocationPreview = () =>
+    pickedLocation ? (
       <Image
         style={styles.image}
         source={{
           uri: getMapPreview(pickedLocation.lat, pickedLocation.lng),
         }}
       />
+    ) : (
+      <Text style={styles.noLocationText}>No location picked yet.</Text>
     );
-  }
 
   return (
     <View>
-      <View style={styles.mapPreview}>{locationPreview}</View>
+      <View style={styles.mapPreview}>{renderLocationPreview()}</View>
       <View style={styles.actions}>
-        <OutlinedButton icon="location" onPress={getLocationHandler}>
+        <CustomButton icon="location" onPress={getLocationHandler}>
           Locate User
-        </OutlinedButton>
-        <OutlinedButton icon="map" onPress={pickOnMapHandler}>
+        </CustomButton>
+        <CustomButton icon="map" onPress={pickOnMapHandler}>
           Pick on Map
-        </OutlinedButton>
+        </CustomButton>
       </View>
     </View>
   );
@@ -155,5 +146,10 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
+  },
+  noLocationText: {
+    color: Colors.primary500,
+    fontSize: 16,
+    fontStyle: "italic",
   },
 });

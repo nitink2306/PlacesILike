@@ -1,13 +1,14 @@
-import { Pressable } from "react-native";
-import { StyleSheet, Text, View, Image } from "react-native";
-
+import { Pressable, StyleSheet, Text, View, Image } from "react-native";
 import { Colors } from "../../constants/colors";
 
 function PlaceItem({ place, onSelect }) {
+  // Extract reusable logic for handling press
+  const handlePress = () => onSelect(place.id);
+
   return (
     <Pressable
-      style={(pressed) => [styles.item, pressed && styles.pressed]}
-      onPress={onSelect.bind(this, place.id)}
+      style={({ pressed }) => [styles.item, pressed && styles.pressed]}
+      onPress={handlePress}
     >
       <Image style={styles.image} source={{ uri: place.imageUri }} />
       <View style={styles.info}>
@@ -27,8 +28,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginVertical: 12,
     backgroundColor: Colors.primary500,
-    elevation: 2,
-    shadowColor: "black",
+    elevation: 2, // For Android shadow
+    shadowColor: "black", // For iOS shadow
     shadowOpacity: 0.15,
     shadowOffset: { width: 1, height: 1 },
     shadowRadius: 2,
@@ -38,9 +39,9 @@ const styles = StyleSheet.create({
   },
   image: {
     flex: 1,
-    borderBottomLeftRadius: 4,
-    borderBottomRightRadius: 4,
     height: 100,
+    borderBottomLeftRadius: 6,
+    borderBottomRightRadius: 6,
   },
   info: {
     flex: 2,

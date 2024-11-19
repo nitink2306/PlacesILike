@@ -5,7 +5,7 @@ import {
   Text,
   TextInput,
   View,
-  ActivityIndicator,
+  Alert,
 } from "react-native";
 
 import { Colors } from "../../constants/colors";
@@ -55,6 +55,23 @@ function PlaceForm({
   }, []);
 
   function savePlaceHandler() {
+    if (!enteredTitle.trim()) {
+      Alert.alert("Validation Error", "Please provide a title for the place.");
+      return;
+    }
+
+    if (!selectedImage) {
+      Alert.alert("Validation Error", "Please add an image for the place.");
+      return;
+    }
+
+    if (!pickedLocation) {
+      Alert.alert(
+        "Validation Error",
+        "Please select a location for the place."
+      );
+      return;
+    }
     const placeData = new Place(
       enteredTitle,
       selectedImage,
@@ -68,14 +85,6 @@ function PlaceForm({
       onCreatePlace(placeData);
     }
   }
-
-  // if (loading) {
-  //   return (
-  //     <View style={styles.loadingContainer}>
-  //       <ActivityIndicator size="large" color={Colors.primary500} />
-  //     </View>
-  //   );
-  // }
 
   return (
     <ScrollView style={styles.form}>
