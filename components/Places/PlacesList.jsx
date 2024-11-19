@@ -5,13 +5,16 @@ import { Colors } from "../../constants/colors";
 import { useNavigation } from "@react-navigation/native";
 
 function PlacesList({ places }) {
-  const navigation = useNavigation();
+  const navigation = useNavigation(); // Hook to enable navigation between screens
 
+  // Navigate to the "PlaceDetailed" screen with the selected place ID
   function selectPlaceHandler(id) {
     navigation.navigate("PlaceDetailed", {
       placeId: id,
     });
   }
+
+  // Fallback UI displayed when there are no places to show
   if (!places || places.length === 0) {
     return (
       <View style={styles.fallbackContainer}>
@@ -19,14 +22,17 @@ function PlacesList({ places }) {
       </View>
     );
   }
+
+  // Render the list of places
   return (
     <FlatList
       style={styles.list}
-      data={places}
-      keyExtractor={(item) => item.id}
+      data={places} // Data array for FlatList
+      keyExtractor={(item) => item.id} // Use unique place ID as the key
       renderItem={({ item }) => (
         <PlaceItem place={item} onSelect={selectPlaceHandler} />
-      )}
+      )} // Render each place as a PlaceItem component
+      showsVerticalScrollIndicator={false} // Hide the vertical scrollbar
     />
   );
 }
@@ -35,15 +41,15 @@ export default PlacesList;
 
 const styles = StyleSheet.create({
   list: {
-    margin: 24,
+    margin: 24, // Outer margin for the list
   },
   fallbackContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    flex: 1, // Fill available space
+    justifyContent: "center", // Center fallback content vertically
+    alignItems: "center", // Center fallback content horizontally
   },
   fallBackText: {
-    fontSize: 16,
-    color: Colors.primary200,
+    fontSize: 16, // Text size for fallback message
+    color: Colors.primary200, // Theme color for fallback text
   },
 });

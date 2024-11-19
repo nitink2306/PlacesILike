@@ -9,7 +9,7 @@ import { Colors } from "../constants/colors";
 function AllPlaces({ route }) {
   const [loadedPlaces, setLoadedPlaces] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState(""); // Debounced search query
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -22,19 +22,16 @@ function AllPlaces({ route }) {
     }
   }, [isFocused]);
 
-  // Debounce the search input
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedQuery(searchQuery);
-    }, 300); // 300ms delay
+    }, 300);
 
-    // Cleanup the timeout if searchQuery changes
     return () => {
       clearTimeout(handler);
     };
   }, [searchQuery]);
 
-  // Filter places based on the debounced query
   const filteredPlaces = loadedPlaces.filter((place) => {
     const titleMatch = place.title
       .toLowerCase()
@@ -51,7 +48,7 @@ function AllPlaces({ route }) {
         <TextInput
           style={styles.searchBar}
           placeholder="Search by title or address"
-          placeholderTextColor="#FFFFFF"
+          placeholderTextColor="#D3D3D3"
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -60,7 +57,7 @@ function AllPlaces({ route }) {
             onPress={() => setSearchQuery("")}
             style={styles.clearButton}
           >
-            <Ionicons name="close-circle" size={20} color={Colors.gray700} />
+            <Ionicons name="close-circle" size={22} color={Colors.primary500} />
           </TouchableOpacity>
         ) : null}
       </View>
@@ -75,24 +72,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: Colors.gray700, // Dark background
+    backgroundColor: Colors.gray700,
   },
   searchBarContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderColor: Colors.primary500,
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    backgroundColor: Colors.primary100, // Darker input background
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    marginBottom: 15,
+    backgroundColor: Colors.primary100,
   },
   searchBar: {
     flex: 1,
-    height: 40,
-    color: "#FFFFFF", // Light text color for dark theme
+    height: 42,
+    color: "#FFFFFF",
+    fontSize: 16,
   },
   clearButton: {
-    marginLeft: 5,
+    marginLeft: 10,
   },
 });
